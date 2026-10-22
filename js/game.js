@@ -175,6 +175,8 @@
     G.paused = false;
     if (G.S && G.S.over) { F.newYear(G.S); saveFarm(); }
     if (!G.S) makeDemo();
+    A.froggyVisit = null;
+    A.fit(null);
     A.setSeason(farm().season);
     $('logoMain').textContent = F.TITLE.toUpperCase();
     farmRow();
@@ -212,6 +214,7 @@
     setBud();
     A.setSeason(G.S.season);
     G.lastFrog = G.S.froggy;
+    A.fit(null);
     show('play');
     seedPrices();
     const se = F.season(G.S);
@@ -645,6 +648,9 @@
       p.focus = null;
     });
     A.froggyVisit = { x: G.players.length === 2 ? 2.6 : 1.8, z: fz + 0.2 };
+    A.fit({ x0: -6.5, x1: 6.5, z0: fz - 5.5, z1: fz + 1.6 }, true); // the camera glides in on the fair
+    G.hintT = 0;
+    $('hintLine').textContent = '';
     A.focus(0, null);
     A.focus(1, null);
     sfx.fair();

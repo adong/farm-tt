@@ -4,7 +4,7 @@
 (function () {
   const L = Kit.lang;
   L.keep(['TEDDY', 'TOMMY', 'Teddy', 'Tommy', 'TEDDY & TOMMY', 'TEDDY + TOMMY', 'TT', 'TT FARM', 'TT Farm', 'Claude Code',
-    'FOXY', 'FROGGY', 'Teddy (1P)', 'Tommy (2P)', 'Esc', '?', 'Shift', 'Space', 'Enter']);
+    'FOXY', 'FROGGY', 'Teddy (1P)', 'Tommy (2P)', 'TEDDY (1P)', 'TOMMY (2P)', 'Esc', '?', 'Shift', 'Space', 'Enter']);
 
   const SEASON = { SPRING: '春天', SUMMER: '夏天', AUTUMN: '秋天', WINTER: '冬天' };
   const GOOD = { 'BOK CHOY': '小白菜', RICE: '稻子', WATERMELON: '西瓜', EGG: '鸡蛋', MILK: '牛奶', WOOL: '羊毛', COW: '奶牛', SHEEP: '小羊', CHICKEN: '小鸡', 'MORE FIELD': '更多田地' };
@@ -28,6 +28,8 @@
       '点一块地就能种菜、浇水、收获。点小动物喂它们，点 Foxy 的市场卖东西。点哥哥或弟弟的脸，叫他来给整片地浇水。',
     'LOADING THE FARM…': '农场准备中…',
     'Difficulty': '难度',
+    '🐣 EASY': '🐣 简单',
+    '🔥 NORMAL': '🔥 普通',
 
     // the HUD
     'FREE': '免费',

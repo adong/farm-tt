@@ -625,8 +625,9 @@
       const g = new T.Group();
       scene.add(g);
       const sh = shelter(g, id === 'cow' ? 2.8 : 2.4, 2.4, id === 'chicken' ? '#e0573f' : id === 'cow' ? '#c99a5e' : '#a8c7de');
-      sh.position.set(0, 0, -0.2);
+      sh.position.set(0, 0, -1.9); // the shelter stands behind, so the camera sees the animal in front of it
       const who = new T.Group();
+      who.position.z = 0.25;
       g.add(who);
       let bodies;
       if (id === 'chicken') bodies = [chicken(who, -0.45, 0.1, 0.4), chicken(who, 0.5, -0.1, -0.5)];
@@ -893,6 +894,7 @@
 
   /* ---------------- per frame: particles, weather ---------------- */
   A.update = function (dt, t) {
+    A.glide(dt);
     for (let i = pops.length - 1; i >= 0; i--) {
       const p = pops[i];
       p.t += dt;
@@ -958,22 +960,21 @@
     A.fit();
   };
   const PITCH = 0.92; // how far the camera looks down (radians from level)
-  A.fit = function () {
-    if (!L || !camera) return;
-    const v = L.view;
+  let cam = null, camGoal = null;
+  const place = (c) => {
+    camera.position.set(c.tx, Math.sin(PITCH) * c.d, c.tz + Math.cos(PITCH) * c.d);
+    camera.lookAt(c.tx, 0, c.tz);
+    camera.updateMatrixWorld(true);
+  };
+  // the camera target and distance that fit rect v (metres on the ground) inside the screen's safe area
+  function solve(v) {
     const pts = [];
     for (const x of [v.x0, v.x1]) for (const z of [v.z0, v.z1]) { pts.push(new T.Vector3(x, 0, z)); pts.push(new T.Vector3(x, z < 0 ? 3.2 : 1.4, z)); }
     const safe = {
       x0: (margins.l / W) * 2 - 1, x1: 1 - (margins.r / W) * 2,
       y0: (margins.b / H) * 2 - 1, y1: 1 - (margins.t / H) * 2,
     };
-    let tx = (v.x0 + v.x1) / 2, tz = (v.z0 + v.z1) / 2;
-    let d = 40;
-    const place = () => {
-      camera.position.set(tx, Math.sin(PITCH) * d, tz + Math.cos(PITCH) * d);
-      camera.lookAt(tx, 0, tz);
-      camera.updateMatrixWorld(true);
-    };
+    const c = { tx: (v.x0 + v.x1) / 2, tz: (v.z0 + v.z1) / 2, d: 40 };
     const bbox = () => {
       let x0 = 9, x1 = -9, y0 = 9, y1 = -9;
       for (const p of pts) {
@@ -985,24 +986,34 @@
     for (let it = 0; it < 4; it++) {
       let lo = 5, hi = 200;
       for (let k = 0; k < 30; k++) {
-        d = (lo + hi) / 2;
-        place();
+        c.d = (lo + hi) / 2;
+        place(c);
         const b = bbox();
-        const fits = b.x1 - b.x0 <= safe.x1 - safe.x0 && b.y1 - b.y0 <= safe.y1 - safe.y0;
-        if (fits) hi = d; else lo = d;
+        if (b.x1 - b.x0 <= safe.x1 - safe.x0 && b.y1 - b.y0 <= safe.y1 - safe.y0) hi = c.d; else lo = c.d;
       }
-      d = hi;
-      place();
+      c.d = hi;
+      place(c);
       const b = bbox();
       // slide the target so the box sits in the middle of the safe area
       const ex = (safe.x0 + safe.x1) / 2 - (b.x0 + b.x1) / 2, ey = (safe.y0 + safe.y1) / 2 - (b.y0 + b.y1) / 2;
-      const wPerNdcX = ((v.x1 - v.x0) / Math.max(0.01, b.x1 - b.x0));
-      const zPerNdcY = ((v.z1 - v.z0) / Math.max(0.01, b.y1 - b.y0));
-      tx -= ex * wPerNdcX;
-      tz += ey * zPerNdcY;
+      c.tx -= ex * ((v.x1 - v.x0) / Math.max(0.01, b.x1 - b.x0));
+      c.tz += ey * ((v.z1 - v.z0) / Math.max(0.01, b.y1 - b.y0));
     }
-    place();
-    A.camD = d;
+    return c;
+  }
+  // fit the whole farm (or rect, for the Harvest Fair); smooth glides there instead of jumping
+  A.fit = function (rect, smooth) {
+    if (!L || !camera) return;
+    if (rect !== undefined) A.fitRect = rect;
+    camGoal = solve(A.fitRect || L.view);
+    if (!smooth || !cam) cam = Object.assign({}, camGoal);
+    place(cam);
+  };
+  A.glide = function (dt) {
+    if (!cam || !camGoal) return;
+    const k = 1 - Math.exp(-2.5 * dt);
+    for (const key of ['tx', 'tz', 'd']) cam[key] += (camGoal[key] - cam[key]) * k;
+    place(cam);
   };
   // the ground point under a screen point
   const ray = new T.Raycaster(), plane = new T.Plane(new T.Vector3(0, 1, 0), 0);
