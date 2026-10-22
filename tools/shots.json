@@ -1,0 +1,4 @@
+[
+ { "label": "prefs", "js": "localStorage.setItem('claudeGames.muted', '1'); localStorage.removeItem('claudeGames.lang'); localStorage.removeItem('farmTT.farm'); location.reload(); 'reload'", "wait": 4000 },
+ { "label": "title", "js": "game.autoPause = false; game.title(); game.step(2); JSON.stringify(game.info().screen)", "wait": 900, "shot": "screenshot" }
+]

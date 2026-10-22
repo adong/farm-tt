@@ -1028,4 +1028,5 @@
     return { x: (q.x + 1) / 2 * W, y: (1 - q.y) / 2 * H };
   };
   A.render = function () { renderer.render(scene, camera); };
+  A.stats = () => ({ calls: renderer.info.render.calls, triangles: renderer.info.render.triangles, geometries: renderer.info.memory.geometries, textures: renderer.info.memory.textures });
 })();
