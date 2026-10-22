@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#e5533d">
+<title>TT Farm · Teddy &amp; Tommy</title>
+<!-- The game's icon: the same emoji as its card on the dashboard, on a coloured tile. It's the browser tab's icon (the SVG, then
+     a PNG drawn below) and the iPad home screen's (apple-touch-icon). The device's own emoji font draws it: no image files. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2064%2064'%3E%3Crect%20x='2'%20y='2'%20width='60'%20height='60'%20rx='14'%20fill='%23e5533d'%20stroke='%2314121f'%20stroke-width='4'/%3E%3Ctext%20x='32'%20y='44'%20font-size='36'%20text-anchor='middle'%3E%F0%9F%8C%BE%3C/text%3E%3C/svg%3E">
+<script>
+  (function (emoji, tile) {
+    function draw(size, framed) {
+      const c = document.createElement('canvas');
+      c.width = c.height = size;
+      const g = c.getContext('2d');
+      if (!g) return '';
+      const u = size / 64;
+      g.fillStyle = tile;
+      if (framed) { // the tab: a rounded tile with the dashboard's dark outline
+        g.beginPath();
+        if (g.roundRect) g.roundRect(2 * u, 2 * u, 60 * u, 60 * u, 14 * u); else g.rect(2 * u, 2 * u, 60 * u, 60 * u);
+        g.fill();
+        g.lineWidth = 4 * u;
+        g.strokeStyle = '#14121f';
+        g.stroke();
+      } else g.fillRect(0, 0, size, size); // the home screen: iOS rounds the corners itself
+      g.font = `${Math.round(size * (framed ? 0.56 : 0.62))}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+      g.textAlign = 'center';
+      const m = g.measureText(emoji);
+      const up = m.actualBoundingBoxAscent || size * 0.4, down = m.actualBoundingBoxDescent || 0;
+      g.fillText(emoji, size / 2, size / 2 + (up - down) / 2);
+      try { return c.toDataURL('image/png'); } catch (e) { return ''; }
+    }
+    const tab = draw(64, true), home = draw(180, false);
+    if (tab) document.querySelector('link[rel="icon"]').href = tab;
+    if (home) {
+      const l = document.createElement('link');
+      l.rel = 'apple-touch-icon';
+      l.href = home;
+      document.head.appendChild(l);
+    }
+  })('🌾', '#e5533d');
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --yellow: #ffd400;
+    --pink: #ff3d7f;
+    --cyan: #18d4ff;
+    --mint: #7fdcbd;
+    --red: #e5533d;
+    --green: #5ec24a;
+    --ink: #14121f;
+    --panel: rgba(28, 40, 24, 0.62);
+    --display: 'Bungee', 'Arial Black', Impact, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden; color: #fff; background: #9ad7ff;
+    font-family: 'Rubik', system-ui, -apple-system, sans-serif;
+    touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  }
+  #view { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  .hidden { display: none !important; }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  kbd {
+    display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 5px; margin: 1px;
+    font: 700 12px/1 system-ui, sans-serif; color: var(--ink); background: #fff; border-radius: 6px; box-shadow: 0 2px 0 #9aa;
+  }
+  .btn {
+    font-family: var(--display); font-size: clamp(16px, 2.8vw, 24px); color: var(--ink); pointer-events: auto;
+    background: var(--yellow); border: 4px solid var(--ink); border-radius: 20px; padding: 10px 22px;
+    box-shadow: 0 8px 0 var(--ink), 0 14px 30px rgba(0, 0, 0, 0.3);
+  }
+  .btn:hover { filter: brightness(1.06); }
+  .btn:active { transform: translateY(6px); box-shadow: 0 2px 0 var(--ink); }
+  .btn.alt { background: var(--cyan); }
+  .btn.mint { background: var(--mint); }
+  .btn.ghost { background: #fff; }
+  .btn.red { background: var(--red); color: #fff; -webkit-text-stroke: 1px var(--ink); paint-order: stroke fill; }
+  .btn.small { font-size: clamp(13px, 2vw, 17px); padding: 7px 14px; border-radius: 15px; box-shadow: 0 6px 0 var(--ink); }
+  .btn small { display: block; font: 800 11px/1.2 'Rubik', sans-serif; letter-spacing: 0.5px; margin-top: 3px; -webkit-text-stroke: 0; }
+  .pulse { animation: pulse 1.3s ease-in-out infinite; }
+  @keyframes pulse { 50% { transform: scale(1.05); } }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; align-items: center; }
+
+  /* ---------- screens ---------- */
+  .screen {
+    position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: safe center;
+    gap: clamp(8px, 1.6vh, 16px); padding: 16px 16px 16px 64px; text-align: center; overflow-y: auto;
+    background: radial-gradient(ellipse at center, rgba(20, 30, 18, 0.2), rgba(20, 30, 18, 0.62));
+  }
+  .screen > * { flex-shrink: 0; }
+  #title { background: radial-gradient(ellipse at center, rgba(20, 30, 18, 0.06), rgba(20, 30, 18, 0.5)); }
+  .logo { transform: rotate(-4deg); line-height: 0.9; margin-bottom: 4px; }
+  .logo span { display: block; font-family: var(--display); -webkit-text-stroke: 4px var(--ink); paint-order: stroke fill; }
+  .logo .l1 { color: #fff; font-size: clamp(18px, min(4.2vw, 4.6vh), 40px); text-shadow: 0 5px 0 var(--green), 0 9px 0 var(--ink); }
+  .logo .l2 { color: var(--yellow); font-size: clamp(44px, min(11vw, 12vh), 120px); text-shadow: 0 6px 0 var(--red), 0 11px 0 var(--ink), 0 18px 30px rgba(0, 0, 0, 0.35); }
+  .tag { font-size: clamp(14px, 2.2vw, 20px); font-weight: 800; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.5); max-width: 640px; }
+  .modes { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; align-items: stretch; }
+  .mode { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 16px 12px; min-width: 150px; }
+  .mode .pics { display: flex; gap: 2px; height: clamp(52px, 9vh, 82px); }
+  .mode .pics img { height: 100%; aspect-ratio: 1; border-radius: 14px; border: 3px solid var(--ink); background: radial-gradient(circle at 50% 35%, #a5dcff, #2a6fd0); }
+  .mode .pics img.tm { background: radial-gradient(circle at 50% 35%, #d8fff0, #3fae8b); }
+  .seg { display: flex; border-radius: 16px; overflow: hidden; border: 3px solid var(--ink); box-shadow: 0 5px 0 var(--ink); pointer-events: auto; }
+  .seg button { padding: 7px 14px; font-family: var(--display); font-size: 15px; background: rgba(255, 255, 255, 0.85); color: var(--ink); }
+  .seg button small { display: block; font: 800 10px/1.1 'Rubik', sans-serif; }
+  .seg button[aria-checked="true"] { background: var(--yellow); }
+  .farmrow { display: flex; align-items: center; gap: 10px; padding: 6px 8px 6px 14px; border-radius: 16px; background: rgba(28, 40, 24, 0.66); border: 2px solid rgba(255, 255, 255, 0.7); font-weight: 800; font-size: 14px; }
+  .farmrow .btn { box-shadow: 0 4px 0 var(--ink); }
+  .farmrow .btn.sure { background: var(--red); color: #fff; }
+  .keys {
+    display: grid; grid-template-columns: auto auto auto; gap: 3px 14px; align-items: center; text-align: left;
+    padding: 9px 14px; border-radius: 16px; background: rgba(20, 28, 18, 0.62); border: 2px solid rgba(255, 255, 255, 0.6);
+    font-size: 13px; font-weight: 700;
+  }
+  .keys .h { font-family: var(--display); font-size: 12px; font-weight: 400; letter-spacing: 1px; }
+  .touch-hint { display: none; font-weight: 700; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7); max-width: 560px; }
+  .touch .keys { display: none; }
+  .touch .touch-hint { display: block; }
+  .credit { position: fixed; right: max(14px, env(safe-area-inset-right)); bottom: max(10px, env(safe-area-inset-bottom)); font-size: 13px; font-weight: 700; opacity: 0.9; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6); pointer-events: none; }
+  .credit b { color: #ffe2a0; }
+  .big {
+    font-family: var(--display); font-size: clamp(34px, 7.5vw, 84px); line-height: 1; color: var(--yellow); transform: rotate(-3deg);
+    -webkit-text-stroke: 4px var(--ink); paint-order: stroke fill; text-shadow: 0 7px 0 var(--red), 0 12px 0 var(--ink);
+  }
+  .hint { font-size: 13px; font-weight: 700; opacity: 0.9; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6); }
+
+  /* ---------- HUD ---------- */
+  #hud { position: fixed; inset: 0; pointer-events: none; }
+  #hud.off { visibility: hidden; }
+  #hud.off * { pointer-events: none !important; }
+  .chip { position: absolute; left: 64px; top: 10px; display: flex; align-items: center; gap: 8px; padding: 6px 12px 6px 8px; border-radius: 16px; background: var(--panel); border: 3px solid rgba(255, 255, 255, 0.75); }
+  .chip .e { font-size: 30px; line-height: 1; }
+  .chip b { display: block; font-family: var(--display); font-weight: 400; font-size: 16px; line-height: 1.05; }
+  .chip small { display: block; font: 800 12px/1.2 'Rubik', sans-serif; opacity: 0.92; }
+  .yearbar { display: flex; gap: 3px; margin-top: 4px; }
+  .yearbar i { position: relative; width: 26px; height: 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.25); overflow: hidden; }
+  .yearbar i b { position: absolute; inset: 0; width: 0; background: #fff; }
+  .yearbar i:nth-child(1) b { background: #ff9fc8; }
+  .yearbar i:nth-child(2) b { background: #ffd400; }
+  .yearbar i:nth-child(3) b { background: #ff8a1f; }
+  .yearbar i:nth-child(4) b { background: #bfe6ff; }
+  #score { position: absolute; left: 50%; top: 10px; translate: -50% 0; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  #coins { font-family: var(--display); font-size: clamp(22px, 3.4vw, 34px); line-height: 1; padding: 4px 16px; border-radius: 16px; background: var(--panel); border: 3px solid rgba(255, 255, 255, 0.75); -webkit-text-stroke: 1px var(--ink); paint-order: stroke fill; }
+  #coins.bump { animation: bump 0.4s ease-out; }
+  @keyframes bump { 40% { transform: scale(1.18); } }
+  #versus { display: flex; gap: 6px; font: 800 13px/1 'Rubik', sans-serif; }
+  #versus span { padding: 4px 9px; border-radius: 999px; background: var(--panel); border: 2px solid rgba(255, 255, 255, 0.6); white-space: nowrap; }
+  #versus .you { border-color: var(--yellow); }
+  #versus .frog { border-color: #7ad86a; }
+  .ibtns { position: absolute; right: max(12px, env(safe-area-inset-right)); top: 10px; display: flex; gap: 6px; pointer-events: auto; }
+  .ibtn { width: 44px; height: 44px; border-radius: 12px; font-size: 18px; line-height: 1; background: rgba(20, 28, 18, 0.6); border: 2px solid rgba(255, 255, 255, 0.85); display: grid; place-items: center; }
+
+  #seeds { position: absolute; left: 64px; bottom: max(12px, env(safe-area-inset-bottom)); display: flex; gap: 8px; pointer-events: auto; }
+  .seed { position: relative; width: 70px; height: 76px; border-radius: 18px; background: #fff7e2; color: var(--ink); border: 4px solid var(--ink); box-shadow: 0 5px 0 var(--ink); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .seed .e { font-size: 34px; line-height: 1; }
+  .seed small { font: 800 12px/1 'Rubik', sans-serif; margin-top: 3px; white-space: nowrap; }
+  .seed .star { position: absolute; top: -10px; right: -8px; font-size: 20px; display: none; }
+  .seed.star .star { display: block; }
+  .seed.p1 { background: var(--yellow); }
+  .seed.p2 { box-shadow: 0 5px 0 var(--ink), 0 0 0 4px var(--cyan); }
+  .seed.p1.p2 { background: linear-gradient(135deg, var(--yellow) 50%, var(--cyan) 50%); }
+  .seed:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--ink); }
+  .seed kbd { position: absolute; bottom: -9px; left: 50%; translate: -50% 0; min-width: 18px; height: 18px; font-size: 10px; }
+  .touch .seed kbd { display: none; }
+  #basket { position: absolute; left: 50%; bottom: max(14px, env(safe-area-inset-bottom)); translate: -50% 0; display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 18px; background: var(--panel); border: 3px solid rgba(255, 255, 255, 0.75); font-weight: 800; white-space: nowrap; }
+  #basket .e { font-size: 28px; line-height: 1; }
+  #bItems { display: flex; gap: 6px; font-size: 20px; min-width: 30px; }
+  #bItems span { display: inline-flex; align-items: baseline; }
+  #bItems small { font: 800 13px/1 'Rubik', sans-serif; margin-left: 1px; }
+  #bValue { font: 800 14px/1 'Rubik', sans-serif; color: #ffe27a; }
+  #wish { font: 800 12px/1.1 'Rubik', sans-serif; padding: 3px 8px; border-radius: 10px; background: rgba(255, 255, 255, 0.16); }
+  #basket.bump { animation: bump 0.35s ease-out; }
+  .budbtn {
+    position: absolute; right: max(18px, env(safe-area-inset-right)); bottom: max(22px, env(safe-area-inset-bottom)); width: 96px; height: 96px; padding: 0; border-radius: 50%; pointer-events: auto;
+    display: flex; align-items: center; justify-content: center; background: var(--yellow); border: 4px solid #fff; box-shadow: 0 6px 0 var(--ink);
+  }
+  .budbtn .pics { display: flex; width: 76px; height: 76px; border-radius: 50%; overflow: hidden; background: radial-gradient(circle at 50% 35%, #ffe2a0, #ff9f1c); }
+  .budbtn .pics img { flex: 1; min-width: 0; height: 100%; object-fit: cover; }
+  .budbtn small { position: absolute; bottom: -13px; left: 50%; translate: -50% 0; white-space: nowrap; font: 800 11px/1 'Rubik', sans-serif; letter-spacing: 0.5px; padding: 4px 9px; border-radius: 999px; background: var(--ink); border: 2px solid #fff; color: #fff; }
+  .budbtn kbd { position: absolute; top: 4px; right: 4px; min-width: 18px; height: 18px; font-size: 10px; }
+  .touch .budbtn kbd { display: none; }
+  .budbtn.want { animation: want 0.7s ease-in-out infinite; box-shadow: 0 6px 0 var(--ink), 0 0 30px rgba(255, 212, 0, 0.95); }
+  @keyframes want { 50% { transform: scale(1.12); } }
+  .budbtn.down { transform: translateY(5px); box-shadow: 0 1px 0 var(--ink); }
+  #hintLine { position: absolute; left: 50%; bottom: 112px; translate: -50% 0; padding: 6px 14px; border-radius: 14px; background: var(--panel); font: 800 clamp(14px, 2.2vw, 19px)/1.25 'Rubik', sans-serif; text-align: center; max-width: min(560px, 70vw); }
+  #hintLine:empty { display: none; }
+
+  /* toasts and banners (their pop-ins use the game clock) */
+  #toasts { position: fixed; left: 0; right: 0; top: 0; height: 0; pointer-events: none; }
+  .toast {
+    position: absolute; left: 50%; translate: -50% 0; white-space: nowrap; font-family: var(--display); font-size: clamp(14px, 2.4vw, 24px); color: #fff;
+    padding: 4px 14px; border-radius: 16px; -webkit-text-stroke: 1.5px var(--ink); paint-order: stroke fill; text-shadow: 0 3px 0 var(--ink); background: rgba(20, 28, 18, 0.45);
+  }
+  .toast.good { color: var(--yellow); }
+  .toast.buddy { color: var(--cyan); font-size: clamp(16px, 3vw, 30px); }
+  .toast.oops { color: #ffb0b0; }
+  .toast.cpu { color: #ffd9a8; font-size: clamp(13px, 2vw, 19px); }
+  .banner {
+    position: fixed; left: 50%; top: 34%; translate: -50% -50%; text-align: center; font-family: var(--display); pointer-events: none; white-space: nowrap;
+    font-size: clamp(30px, 7vw, 76px); line-height: 1; color: var(--yellow); padding: 0 8px;
+    -webkit-text-stroke: 4px var(--ink); paint-order: stroke fill; text-shadow: 0 6px 0 var(--red), 0 11px 0 var(--ink), 0 18px 30px rgba(0, 0, 0, 0.35);
+  }
+  .banner small { display: block; font-size: 0.36em; margin-top: 10px; color: #fff; -webkit-text-stroke: 2px var(--ink); text-shadow: 0 4px 0 var(--ink); }
+
+  /* results */
+  .stats { padding: 10px 16px; border-radius: 16px; background: rgba(20, 28, 18, 0.72); border: 2px solid rgba(255, 255, 255, 0.7); font-weight: 800; display: flex; flex-direction: column; gap: 6px; font-size: clamp(14px, 2.2vw, 18px); }
+  .stats .vs { display: flex; gap: 12px; justify-content: center; align-items: stretch; flex-wrap: wrap; }
+  .stats .vs div { padding: 8px 14px; border-radius: 14px; background: rgba(255, 255, 255, 0.12); min-width: 120px; }
+  .stats .vs div b { display: block; font-family: var(--display); font-weight: 400; font-size: clamp(22px, 4vw, 34px); }
+  .stats .vs div.win { background: rgba(255, 212, 0, 0.28); outline: 3px solid var(--yellow); }
+  #ribbon { font-size: clamp(40px, 8vh, 64px); line-height: 1; }
+  .confetti { position: fixed; top: -20px; width: 12px; height: 16px; pointer-events: none; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
+
+  #loading { position: fixed; inset: 0; display: grid; place-items: center; background: #9ad7ff; color: var(--ink); font-family: var(--display); font-size: 28px; letter-spacing: 2px; padding: 24px; text-align: center; }
+
+  @media (max-width: 640px) { .credit { display: none; } }
+  @media (max-height: 520px) {
+    .screen { gap: 6px; padding: 8px 8px 8px 60px; }
+    .logo .l1 { font-size: 16px; }
+    .logo .l2 { font-size: 44px; }
+    .tag { font-size: 13px; }
+    .mode { padding: 6px 12px 8px; min-width: 120px; font-size: 16px; }
+    .mode .pics { height: 44px; }
+    .keys, .touch .touch-hint { display: none; }
+    .big { font-size: 38px; }
+    .chip { top: 6px; padding: 3px 9px 3px 6px; }
+    .chip .e { font-size: 22px; }
+    .chip b { font-size: 13px; }
+    .chip small { font-size: 10px; }
+    .yearbar i { width: 18px; height: 6px; }
+    #score { top: 6px; flex-direction: row; }
+    #coins { font-size: 20px; padding: 3px 10px; }
+    #versus { font-size: 11px; }
+    .ibtns { top: 6px; }
+    .ibtn { width: 38px; height: 38px; }
+    .seed { width: 54px; height: 56px; border-radius: 14px; border-width: 3px; }
+    .seed .e { font-size: 26px; }
+    .seed small { font-size: 10px; }
+    #seeds { bottom: 8px; gap: 6px; }
+    #basket { bottom: 8px; padding: 3px 9px; gap: 6px; }
+    #basket .e { font-size: 22px; }
+    #bItems { font-size: 16px; }
+    .budbtn { width: 70px; height: 70px; bottom: 16px; }
+    .budbtn .pics { width: 54px; height: 54px; }
+    #hintLine { bottom: 82px; font-size: 13px; }
+    .stats .vs div { min-width: 96px; padding: 4px 10px; }
+    #ribbon { font-size: 34px; }
+  }
+  @media (max-width: 520px) {
+    #score { top: 62px; left: auto; right: max(12px, env(safe-area-inset-right)); translate: 0 0; align-items: flex-end; }
+    .chip { max-width: calc(100vw - 180px); }
+    #basket { bottom: 100px; left: 64px; translate: 0 0; max-width: calc(100vw - 80px); flex-wrap: wrap; }
+    #wish { display: none; }
+    .seed { width: 60px; height: 66px; }
+    .seed .e { font-size: 30px; }
+    .budbtn { width: 84px; height: 84px; }
+    .budbtn .pics { width: 66px; height: 66px; }
+    #hintLine { bottom: 160px; max-width: 80vw; }
+  }
+</style>
+</head>
+<body>
+<canvas id="view"></canvas>
+<div id="loading">LOADING THE FARM…</div>
+
+<div id="hud" class="off">
+  <div class="chip" id="chip"><span class="e" id="sEmoji">🌸</span><span><b id="sName">SPRING</b><small id="sYear">YEAR 1</small><span class="yearbar" id="yearbar"><i><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i></span></span></div>
+  <div id="score"><div id="coins">🪙 0</div><div id="versus"><span class="you" id="vYou">🧺 0</span><span class="frog" id="vFrog">🐸 0</span></div></div>
+  <div class="ibtns"><button id="pauseBtn" class="ibtn" title="Pause (P)">❚❚</button><button class="ibtn muteBtn" title="Sound (M)">🔊</button></div>
+  <div id="seeds">
+    <button class="seed" data-seed="bokchoy"><span class="star">⭐</span><span class="e">🥬</span><small data-price="bokchoy">FREE</small><kbd>1</kbd></button>
+    <button class="seed" data-seed="rice"><span class="star">⭐</span><span class="e">🌾</span><small data-price="rice">FREE</small><kbd>2</kbd></button>
+    <button class="seed" data-seed="melon"><span class="star">⭐</span><span class="e">🍉</span><small data-price="melon">FREE</small><kbd>3</kbd></button>
+  </div>
+  <div id="basket"><span class="e">🧺</span><span id="bItems"></span><span id="bValue"></span><span id="wish"></span></div>
+  <div id="hintLine"></div>
+  <button id="budBtn" class="budbtn"><span class="pics"><img alt=""><img alt="" class="hidden"></span><small>CALL TOMMY</small><kbd>T</kbd></button>
+</div>
+
+<div id="toasts"></div>
+<div id="banner" class="banner hidden"></div>
+
+<div id="title" class="screen hidden">
+  <div class="logo"><span class="l1">TEDDY &amp; TOMMY</span><span class="l2" id="logoMain"></span></div>
+  <p class="tag">Plant, water and harvest! Feed the animals and sell at the market.</p>
+  <div class="modes">
+    <button class="btn mode pulse" data-play="teddy"><span class="pics"><img alt="" data-face="teddy"></span>TEDDY<small>1 player · key 1</small></button>
+    <button class="btn mode mint" data-play="tommy"><span class="pics"><img alt="" class="tm" data-face="tommy"></span>TOMMY<small>1 player · key 2</small></button>
+    <button class="btn mode alt" data-play="both"><span class="pics"><img alt="" data-face="teddy"><img alt="" class="tm" data-face="tommy"></span>TEDDY + TOMMY<small>2 players, one farm · key 3</small></button>
+  </div>
+  <div class="row">
+    <div class="seg" role="radiogroup" aria-label="Difficulty"><button data-level="easy" role="radio">🐣 EASY<small>free seeds, wet soil</small></button><button data-level="normal" role="radio">🔥 NORMAL<small>seeds cost coins</small></button></div>
+    <div class="farmrow hidden" id="farmRow"><span id="farmInfo"></span><button class="btn small ghost" id="newFarmBtn">NEW FARM</button></div>
+  </div>
+  <div class="keys">
+    <span></span><span class="h">TEDDY (1P)</span><span class="h">TOMMY (2P)</span>
+    <span>walk</span><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span><span><kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd></span>
+    <span>plant · water · pick · feed · sell</span><span><kbd>Space</kbd></span><span><kbd>Enter</kbd></span>
+    <span>next seed</span><span><kbd>Q</kbd> or <kbd>1</kbd><kbd>2</kbd><kbd>3</kbd></span><span><kbd>Shift</kbd></span>
+    <span>call your brother · high five</span><span><kbd>T</kbd></span><span><kbd>T</kbd></span>
+    <span>pause · sound</span><span><kbd>P</kbd> <kbd>M</kbd></span><span><kbd>E</kbd> easy</span>
+  </div>
+  <p class="touch-hint">Tap a plot to plant, water and pick. Tap the animals to feed them and Foxy's market to sell. Your brother's face calls him to water the whole field.</p>
+  <div class="credit">built with <b>Claude Code</b></div>
+</div>
+
+<div id="pause" class="screen hidden">
+  <div class="big">PAUSED</div>
+  <p class="tag">Your farm is saved.</p>
+  <div class="row"><button class="btn pulse" id="resumeBtn">▶ PLAY</button><button class="btn small ghost" id="menuBtn">◀ MENU</button></div>
+  <p class="hint">P or Esc to play · Q for the menu</p>
+</div>
+
+<div id="result" class="screen hidden">
+  <div id="ribbon">🎀</div>
+  <div class="big" id="resTitle">HARVEST FAIR!</div>
+  <p class="tag" id="resLine"></p>
+  <div class="stats">
+    <div class="vs"><div id="resYou"><span id="resYouName">YOU</span><b id="resYouN">0</b></div><div id="resFrog"><span>🐸 FROGGY</span><b id="resFrogN">0</b></div></div>
+    <span id="resBest"></span>
+    <span id="resKids"></span>
+  </div>
+  <div class="row"><button class="btn pulse" id="againBtn">▶ PLAY AGAIN<small>next year, same farm</small></button><button class="btn small ghost" id="resMenuBtn">◀ MENU</button></div>
+  <p class="hint">Enter or Space: next year · Esc: menu</p>
+</div>
+
+<script src="kit/three.min.js"></script>
+<script src="kit/gfx.js"></script>
+<script src="kit/people.js"></script>
+<script src="kit/roster.js"></script>
+<script src="kit/portraits.js"></script>
+<script src="kit/sound.js"></script>
+<script src="kit/lang.js"></script>
+<script src="kit/help.js"></script>
+<script src="js/title.js"></script>
+<script src="js/friends.js"></script>
+<script src="js/rules.js"></script>
+<script src="js/check.js"></script>
+<script src="js/art.js"></script>
+<script src="js/game.js"></script>
+<script src="js/keys.js"></script>
+<script src="js/zh.js"></script>
+</body>
+</html>
